@@ -28,56 +28,50 @@ void setup()
     digitalWrite(LED_PIN, HIGH); // Invertido: LED apagado por padrão
 
     bleKeyboard.setName("OSU-Keyboard");
-    bleKeyboard.setDelay(100);
+    bleKeyboard.setDelay(0);
     bleKeyboard.begin();
 
-    delay(2000);
     blinkLedQuick(3);
-    Serial.println("ESP32C3 iniciado!");
 }
+
+bool pressA = false;
+bool pressB = false;
 
 void loop()
 {
-    bool currA = digitalRead(BUTTON_A_PIN);
-    bool currB = digitalRead(BUTTON_B_PIN);
+    if (!bleKeyboard.isConnected())
+        return;
 
-    if (currB == LOW)
+    bool currA = digitalRead(BUTTON_A_PIN) == LOW;
+    bool currB = digitalRead(BUTTON_B_PIN) == LOW;
+
+    // Botão A
+    if (currA && !pressA)
     {
-        blinkLedQuick(2, 50);
-        Serial.println("Botão B");
+        bleKeyboard.write('a');
+        pressA = true;
+
+        Serial.println("Botão A");
+    }
+    else if (!currA && pressA)
+    {
+        pressA = false;
+        Serial.println("Botão A solto");
     }
 
-    static bool lastA = HIGH, lastB = HIGH;
-
-    if (bleKeyboard.isConnected())
+    // Botão B
+    if (currB && !pressB)
     {
-        // Botão A envia 'a'
-        if (lastA == HIGH && currA == LOW)
-        {
-            bleKeyboard.press('a');
-            digitalWrite(LED_PIN, HIGH);
-            Serial.println("Botão A");
-        }
-        else if (lastA == LOW && currA == HIGH)
-        {
-            bleKeyboard.release('a');
-            digitalWrite(LED_PIN, LOW);
-            Serial.println("Botão A solto");
-        }
-        lastA = currA;
+        bleKeyboard.write('b');
+        pressB = true;
 
-        // Botão B envia 'b'
-        if (lastB == HIGH && currB == LOW)
-        {
-            bleKeyboard.press('b');
-            Serial.println("Botão B");
-        }
-        else if (lastB == LOW && currB == HIGH)
-        {
-            bleKeyboard.release('b');
-            Serial.println("Botão B solto");
-        }
-        lastB = currB;
+        digitalWrite(LED_PIN, LOW);
     }
+    else if (!currB && pressB)
+    {
+        pressB = false;
+        digitalWrite(LED_PIN, HIGH);
+    }
+
     delay(10);
 }
