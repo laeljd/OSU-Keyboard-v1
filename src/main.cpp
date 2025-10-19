@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <BleKeyboard.h>
 
-#define BUTTON_A_PIN 0
-#define BUTTON_B_PIN 1
+#define BUTTON_Z_PIN 0
+#define BUTTON_X_PIN 1
 #define BUTTON_C_PIN 2
 #define LED_PIN 8
 
@@ -23,8 +23,8 @@ void setup()
 {
     Serial.begin(115200);
 
-    pinMode(BUTTON_A_PIN, INPUT_PULLUP);
-    pinMode(BUTTON_B_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_Z_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_X_PIN, INPUT_PULLUP);
     pinMode(BUTTON_C_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH);
@@ -36,8 +36,8 @@ void setup()
     blinkLedQuick(3);
 }
 
-bool pressA = false;
-bool pressB = false;
+bool pressZ = false;
+bool pressX = false;
 bool pressC = false;
 
 void loop()
@@ -45,30 +45,30 @@ void loop()
     if (!bleKeyboard.isConnected())
         return;
 
-    bool currA = digitalRead(BUTTON_A_PIN) == LOW;
-    bool currB = digitalRead(BUTTON_B_PIN) == LOW;
+    bool currZ = digitalRead(BUTTON_Z_PIN) == LOW;
+    bool currX = digitalRead(BUTTON_X_PIN) == LOW;
     bool currC = digitalRead(BUTTON_C_PIN) == LOW;
 
-    // Botão A
-    if (currA && !pressA)
+    // Botão Z
+    if (currZ && !pressZ)
     {
-        bleKeyboard.write('a');
-        pressA = true;
+        bleKeyboard.write('z');
+        pressZ = true;
     }
-    else if (!currA && pressA)
+    else if (!currZ && pressZ)
     {
-        pressA = false;
+        pressZ = false;
     }
 
-    // Botão B
-    if (currB && !pressB)
+    // Botão X
+    if (currX && !pressX)
     {
-        bleKeyboard.write('b');
-        pressB = true;
+        bleKeyboard.write('x');
+        pressX = true;
     }
-    else if (!currB && pressB)
+    else if (!currX && pressX)
     {
-        pressB = false;
+        pressX = false;
     }
 
     // Botão C
