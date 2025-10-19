@@ -43,7 +43,16 @@ bool pressC = false;
 void loop()
 {
     if (!bleKeyboard.isConnected())
+    {
+        // Se desconectar enquanto uma tecla está marcada como pressionada,
+        // garantir que as teclas sejam liberadas para evitar stuck keys.
+        if (pressZ || pressX || pressC)
+        {
+            bleKeyboard.releaseAll();
+            pressZ = pressX = pressC = false;
+        }
         return;
+    }
 
     bool currZ = digitalRead(BUTTON_Z_PIN) == LOW;
     bool currX = digitalRead(BUTTON_X_PIN) == LOW;
@@ -52,33 +61,36 @@ void loop()
     // Botão Z
     if (currZ && !pressZ)
     {
-        bleKeyboard.write('z');
+        bleKeyboard.press('z');
         pressZ = true;
     }
     else if (!currZ && pressZ)
     {
+        bleKeyboard.release('z');
         pressZ = false;
     }
 
     // Botão X
     if (currX && !pressX)
     {
-        bleKeyboard.write('x');
+        bleKeyboard.press('x');
         pressX = true;
     }
     else if (!currX && pressX)
     {
+        bleKeyboard.release('x');
         pressX = false;
     }
 
     // Botão C
     if (currC && !pressC)
     {
-        bleKeyboard.write('c');
+        bleKeyboard.press('c');
         pressC = true;
     }
     else if (!currC && pressC)
     {
+        bleKeyboard.release('c');
         pressC = false;
     }
 
