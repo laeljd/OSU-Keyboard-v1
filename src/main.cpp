@@ -19,6 +19,24 @@ void blinkLedQuick(int times, int duration = 100)
     }
 }
 
+bool pressZ = false;
+bool pressX = false;
+bool pressC = false;
+
+// Debounce (não-bloqueante)
+const unsigned long DEBOUNCE_MS = 1; // ajustar se quiser mais/menos sensível
+
+// estado por botão
+bool lastReadZ = HIGH;
+bool lastReadX = HIGH;
+bool lastReadC = HIGH;
+bool stableZ = false;
+bool stableX = false;
+bool stableC = false;
+unsigned long lastDebounceZ = 0;
+unsigned long lastDebounceX = 0;
+unsigned long lastDebounceC = 0;
+
 void setup()
 {
     Serial.begin(115200);
@@ -34,11 +52,18 @@ void setup()
     bleKeyboard.begin();
 
     blinkLedQuick(3);
-}
 
-bool pressZ = false;
-bool pressX = false;
-bool pressC = false;
+    // inicializa estados estáveis com leitura atual
+    lastReadZ = digitalRead(BUTTON_Z_PIN);
+    lastReadX = digitalRead(BUTTON_X_PIN);
+    lastReadC = digitalRead(BUTTON_C_PIN);
+    stableZ = (lastReadZ == LOW);
+    stableX = (lastReadX == LOW);
+    stableC = (lastReadC == LOW);
+    pressZ = stableZ;
+    pressX = stableX;
+    pressC = stableC;
+}
 
 void loop()
 {
@@ -51,48 +76,92 @@ void loop()
             bleKeyboard.releaseAll();
             pressZ = pressX = pressC = false;
         }
+        // ainda processa leituras para manter estados coerentes, mas retorna cedo é aceitável
         return;
     }
 
-    bool currZ = digitalRead(BUTTON_Z_PIN) == LOW;
-    bool currX = digitalRead(BUTTON_X_PIN) == LOW;
-    bool currC = digitalRead(BUTTON_C_PIN) == LOW;
+    // leituras atuais (LOW = pressionado)
+    int rZ = digitalRead(BUTTON_Z_PIN);
+    int rX = digitalRead(BUTTON_X_PIN);
+    int rC = digitalRead(BUTTON_C_PIN);
+    unsigned long now = millis();
 
-    // Botão Z
-    if (currZ && !pressZ)
+    // --- botão Z debounce ---
+    if (rZ != lastReadZ)
     {
-        bleKeyboard.press('z');
-        pressZ = true;
+        lastDebounceZ = now;
+        lastReadZ = rZ;
     }
-    else if (!currZ && pressZ)
+    else if ((now - lastDebounceZ) >= DEBOUNCE_MS)
     {
-        bleKeyboard.release('z');
-        pressZ = false;
-    }
-
-    // Botão X
-    if (currX && !pressX)
-    {
-        bleKeyboard.press('x');
-        pressX = true;
-    }
-    else if (!currX && pressX)
-    {
-        bleKeyboard.release('x');
-        pressX = false;
-    }
-
-    // Botão C
-    if (currC && !pressC)
-    {
-        bleKeyboard.press('c');
-        pressC = true;
-    }
-    else if (!currC && pressC)
-    {
-        bleKeyboard.release('c');
-        pressC = false;
+        bool pressed = (rZ == LOW);
+        if (pressed != stableZ)
+        {
+            stableZ = pressed;
+            if (stableZ && !pressZ) // transição para pressionado
+            {
+                bleKeyboard.press('z');
+                pressZ = true;
+            }
+            else if (!stableZ && pressZ) // transição para solto
+            {
+                bleKeyboard.release('z');
+                pressZ = false;
+            }
+        }
     }
 
-    delay(5);
+    // --- botão X debounce ---
+    if (rX != lastReadX)
+    {
+        lastDebounceX = now;
+        lastReadX = rX;
+    }
+    else if ((now - lastDebounceX) >= DEBOUNCE_MS)
+    {
+        bool pressed = (rX == LOW);
+        if (pressed != stableX)
+        {
+            stableX = pressed;
+            if (stableX && !pressX)
+            {
+                bleKeyboard.press('x');
+                pressX = true;
+            }
+            else if (!stableX && pressX)
+            {
+                bleKeyboard.release('x');
+                pressX = false;
+            }
+        }
+    }
+
+    // --- botão C debounce ---
+    if (rC != lastReadC)
+    {
+        lastDebounceC = now;
+        lastReadC = rC;
+    }
+    else if ((now - lastDebounceC) >= DEBOUNCE_MS)
+    {
+        bool pressed = (rC == LOW);
+        if (pressed != stableC)
+        {
+            stableC = pressed;
+            if (stableC && !pressC)
+            {
+                // comportamento atual: enviar 'C' (press) ao pressionar C
+                bleKeyboard.press('C');
+                pressC = true;
+            }
+            else if (!stableC && pressC)
+            {
+                // ao soltar C envia 'C' (release)
+                bleKeyboard.release('C');
+                pressC = false;
+            }
+        }
+    }
+
+    // sem delay para não bloquear — loop roda continuamente
 }
