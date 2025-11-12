@@ -24,7 +24,7 @@ bool pressX = false;
 bool pressC = false;
 
 // Debounce (não-bloqueante)
-const unsigned long DEBOUNCE_MS = 1; // ajustar se quiser mais/menos sensível
+const unsigned long DEBOUNCE_MS = 2.5; // ajustar se quiser mais/menos sensível
 
 // estado por botão
 bool lastReadZ = HIGH;
