@@ -1,24 +1,39 @@
-# ESP32 OSU! Keyboard
+# OSU! Bluetooth Keyboard (ESP32-C3)
 
-Este projeto tem como objetivo criar um teclado customizado para o jogo OSU! utilizando uma placa ESP32-C3. O teclado terá 4 botões mecânicos conectados ao ESP32, funcionando como um periférico reconhecido pelo computador.
+Small BLE HID keyboard emulator for playing OSU!. Built for ESP32-C3 and exposes three buttons mapped to Z, X, and C.
 
-## Funcionalidades
-- 4 botões mecânicos para jogar OSU!
-- Comunicação com o PC via USB
-- Funcionamento como um dispositivo de teclado (HID)
+## Features
+- BLE HID keyboard (BleKeyboard library)
+- Three physical buttons: Z, X, C
+- Non-blocking debounce logic
 
-## Por que usar HID?
-O protocolo HID (Human Interface Device) permite que o ESP32 seja reconhecido como um teclado padrão pelo computador, sem necessidade de drivers adicionais. Isso garante compatibilidade com o jogo OSU! e outros softwares.
+## Hardware
+- ESP32-C3 (or compatible with BLE HID support)
+- 3x momentary switches (active LOW)
 
-## Componentes necessários
-- 1x ESP32-C3
-- 4x botões mecânicos
-- Cabos e protoboard ou PCB
+Default pin mapping (see src/main.cpp):
+- BUTTON_Z_PIN: GPIO 0
+- BUTTON_X_PIN: GPIO 1
+- BUTTON_C_PIN: GPIO 2
+- LED_PIN: GPIO 8 (board led)
 
-## Como funciona
-Cada botão será mapeado para uma tecla específica do teclado (por exemplo: Z, X, C, V). Ao pressionar um botão, o ESP32 envia o comando correspondente para o computador via USB, simulando um teclado real.
+## Usage
+1. Power the board and open a BLE-capable host (PC/phone).
+2. Pair with device named `OSU-Keyboard`.
+3. Press Z/X/C buttons to send corresponding keyboard keys.
+4. If BLE disconnects, the firmware releases any pressed keys to avoid stuck keys.
 
-## Próximos passos
-- Montar o circuito com os botões e o ESP32-C3
-- Programar o ESP32 para funcionar como HID
-- Testar no jogo OSU!
+## Build & Flash
+- Using PlatformIO: open project and upload to your ESP32-C3 board.
+- Using Arduino IDE: install required board package and the BleKeyboard library, then upload.
+
+## Notes
+- Debounce is implemented in firmware (non-blocking). Adjust DEBOUNCE_MS in src/main.cpp if needed.
+- The code sets no extra key delay (bleKeyboard.setDelay(0)) for minimal latency.
+
+## Screenshots / Preview
+<img src="./images/keyboard1.jpg" alt="preview" width="240" height="240" />
+<img src="./images/keyboard2.jpg" alt="preview" width="240" height="240" />
+
+## License
+MIT — modify as needed.
