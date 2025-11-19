@@ -36,4 +36,4 @@ Default pin mapping (see src/main.cpp):
 <img src="./images/keyboard2.jpg" alt="preview" width="240" height="240" />
 
 ## License
-MIT — modify as needed.
+MIT [LICENSE](LICENSE)
